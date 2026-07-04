@@ -1,0 +1,65 @@
+{
+  "name": "k2gl/composer-attest",
+  "description": "Composer plugin that verifies GitHub build-provenance attestations for the packages you install.",
+  "homepage": "https://github.com/k2gl/composer-attest",
+  "type": "composer-plugin",
+  "license": "MIT",
+  "keywords": [
+    "composer-plugin",
+    "sigstore",
+    "attestation",
+    "provenance",
+    "supply-chain",
+    "security",
+    "verification",
+    "github"
+  ],
+  "authors": [
+    {
+      "name": "Nick Harin",
+      "email": "l0gic@ya.ru"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/k2gl/composer-attest/issues",
+    "source": "https://github.com/k2gl/composer-attest"
+  },
+  "require": {
+    "php": ">=8.1",
+    "ext-json": "*",
+    "composer-plugin-api": "^2.0",
+    "k2gl/sigstore-verify": "^1.4"
+  },
+  "require-dev": {
+    "composer/composer": "^2.4",
+    "phpunit/phpunit": "^10|^11|^12",
+    "phpstan/phpstan": "^2.1",
+    "laravel/pint": "~1.20.0",
+    "k2gl/phpunit-fluent-assertions": "^12"
+  },
+  "autoload": {
+    "psr-4": {
+      "K2gl\\ComposerAttest\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "K2gl\\ComposerAttest\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "class": "K2gl\\ComposerAttest\\Plugin"
+  },
+  "minimum-stability": "stable",
+  "scripts": {
+    "test": "phpunit",
+    "phpstan": "phpstan analyse",
+    "cs": "pint --test",
+    "cs-fix": "pint",
+    "check": [
+      "@test",
+      "@phpstan",
+      "@cs"
+    ]
+  }
+}
