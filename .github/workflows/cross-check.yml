@@ -1,0 +1,41 @@
+name: Cross-check
+
+# Differential check against GitHub's own `gh attestation verify`: both verify the
+# same real attested zipball and must agree. Runs weekly, on demand, and whenever
+# the verification path or the scripts change.
+on:
+  schedule:
+    - cron: '0 5 * * 1' # Mondays 05:00 UTC
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/AttestationVerifier.php'
+      - 'scripts/**'
+      - '.github/workflows/cross-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  cross-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
+        with:
+          php-version: '8.3'
+          extensions: sodium
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Cross-check against gh attestation verify
+        run: bash scripts/cross-check.sh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}

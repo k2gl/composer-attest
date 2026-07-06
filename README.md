@@ -86,6 +86,18 @@ dist it:
    requiring a GitHub Actions identity of `{owner}/{repo}`;
 4. confirms the artifact's digest is one of the in-toto statement's subjects.
 
+## Cross-checked against GitHub's own tooling
+
+Two independent implementations agreeing is stronger evidence than either one's
+own tests. The [cross-check workflow](.github/workflows/cross-check.yml) verifies a
+real attested package with **both** this verifier (pure PHP) and GitHub's official
+`gh attestation verify` (sigstore-go), and requires them to agree — verified on the
+clean zipball, rejected on a tampered one. Run it yourself:
+
+```bash
+GITHUB_TOKEN=$(gh auth token) bash scripts/cross-check.sh
+```
+
 ## Caveat: what gets attested
 
 Composer installs a package's dist as a **GitHub zipball**
