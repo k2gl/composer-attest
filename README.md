@@ -61,6 +61,19 @@ All configuration lives under `extra.k2gl-attest` in your root `composer.json`:
 Under `enforce`, a package whose attestation fails verification aborts the install
 with a non-zero exit code.
 
+## Verify on demand
+
+The plugin only sees packages Composer downloads during a given install. To audit
+everything already in `vendor/` at once, run:
+
+```bash
+composer attest
+```
+
+It re-fetches each installed GitHub-hosted package's dist, verifies its
+attestation, and prints a summary — honouring the same `extra.k2gl-attest` policy,
+and exiting non-zero on a failure under `enforce`.
+
 ## How it works
 
 The plugin subscribes to Composer's `POST_FILE_DOWNLOAD` event. For each package

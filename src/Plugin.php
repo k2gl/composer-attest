@@ -8,6 +8,8 @@ use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Plugin\Capability\CommandProvider as CommandProviderCapability;
+use Composer\Plugin\Capable;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PostFileDownloadEvent;
@@ -26,7 +28,7 @@ use Throwable;
  * Configure via `extra.k2gl-attest` (see {@see Policy}). Packages not hosted on
  * GitHub, or with no attestation, are skipped unless `require-attestation` is set.
  */
-final class Plugin implements PluginInterface, EventSubscriberInterface
+final class Plugin implements PluginInterface, EventSubscriberInterface, Capable
 {
     private IOInterface $io;
 
@@ -46,6 +48,12 @@ final class Plugin implements PluginInterface, EventSubscriberInterface
     public function deactivate(Composer $composer, IOInterface $io): void {}
 
     public function uninstall(Composer $composer, IOInterface $io): void {}
+
+    /** @return array<class-string, class-string> */
+    public function getCapabilities(): array
+    {
+        return [CommandProviderCapability::class => CommandProvider::class];
+    }
 
     /** @return array<string, string> */
     public static function getSubscribedEvents(): array
