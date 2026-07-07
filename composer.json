@@ -1,6 +1,6 @@
 {
   "name": "k2gl/composer-attest",
-  "description": "Composer plugin that verifies GitHub build-provenance attestations for the packages you install.",
+  "description": "Composer plugin that verifies GitHub build-provenance attestations for the packages you install",
   "homepage": "https://github.com/k2gl/composer-attest",
   "type": "composer-plugin",
   "license": "MIT",
