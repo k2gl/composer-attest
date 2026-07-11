@@ -81,6 +81,25 @@ final class Plugin implements PluginInterface, EventSubscriberInterface, Capable
             ->verify($repo[0], $repo[1], $file);
 
         $this->report($package->getName(), $result);
+        $this->emitVsa($package, $file, $result);
+    }
+
+    private function emitVsa(PackageInterface $package, string $file, VerificationResult $result): void
+    {
+        if (! $result->isVerified() || $result->digest === null) {
+            return;
+        }
+        $path = (new VsaEmitter($this->policy))->write(
+            packageName: $package->getName(),
+            version: $package->getPrettyVersion(),
+            artifactName: basename($file),
+            digest: $result->digest,
+            timeVerified: gmdate('Y-m-d\TH:i:s\Z'),
+        );
+
+        if ($path !== null) {
+            $this->io->write(sprintf('  <info>→ VSA written</info> %s', $path), true, IOInterface::VERBOSE);
+        }
     }
 
     private function report(string $package, VerificationResult $result): void

@@ -6,6 +6,7 @@ namespace K2gl\ComposerAttest;
 
 use Closure;
 use Composer\Command\BaseCommand;
+use Composer\Package\PackageInterface;
 use Composer\Util\HttpDownloader;
 use K2gl\ComposerAttest\Internal\GithubRepo;
 use K2gl\Sigstore\TrustedRoot;
@@ -63,6 +64,7 @@ final class AttestCommand extends BaseCommand
             if ($result->isVerified()) {
                 $io->write(sprintf('  <info>✓</info> %s <comment>(%s)</comment>', $package->getName(), $result->message));
                 $verified++;
+                $this->emitVsa($policy, $package, $result);
             } elseif (! $result->hasAttestation()) {
                 if ($policy->requireAttestation) {
                     $io->writeError(sprintf('  <error>✗</error> %s — no build-provenance attestation', $package->getName()));
@@ -79,6 +81,24 @@ final class AttestCommand extends BaseCommand
         $io->write(sprintf('<info>%d verified</info>, %d without attestation, <error>%d failed</error>.', $verified, $absent, $failed));
 
         return $failed > 0 && $policy->isEnforcing() ? 1 : 0;
+    }
+
+    private function emitVsa(Policy $policy, PackageInterface $package, VerificationResult $result): void
+    {
+        if ($result->digest === null) {
+            return;
+        }
+        $path = (new VsaEmitter($policy))->write(
+            packageName: $package->getName(),
+            version: $package->getPrettyVersion(),
+            artifactName: sprintf('%s-%s.zip', basename($package->getName()), $package->getPrettyVersion()),
+            digest: $result->digest,
+            timeVerified: gmdate('Y-m-d\TH:i:s\Z'),
+        );
+
+        if ($path !== null) {
+            $this->getIO()->write(sprintf('    <info>→ VSA</info> %s', $path));
+        }
     }
 
     /**
