@@ -25,6 +25,8 @@ namespace K2gl\ComposerAttest;
  * - `emit-vsa` — after a package verifies, write a SLSA Verification Summary
  *   Attestation (VSA) recording the outcome.
  * - `vsa-dir` — where those VSA files are written (default `.attestations/vsa`).
+ * - `vsa-sign-key` — path to a PEM private key; when set, each VSA is signed into
+ *   a DSSE envelope instead of written as a bare statement.
  */
 final class Policy
 {
@@ -43,6 +45,7 @@ final class Policy
         public readonly string $issuer = self::DEFAULT_ISSUER,
         public readonly bool $emitVsa = false,
         public readonly string $vsaDir = self::DEFAULT_VSA_DIR,
+        public readonly ?string $vsaSignKey = null,
     ) {}
 
     /** @param array<string, mixed> $extra the root package's `extra` array */
@@ -61,6 +64,7 @@ final class Policy
             issuer: is_string($config['issuer'] ?? null) && $config['issuer'] !== '' ? $config['issuer'] : self::DEFAULT_ISSUER,
             emitVsa: (bool) ($config['emit-vsa'] ?? false),
             vsaDir: is_string($config['vsa-dir'] ?? null) && $config['vsa-dir'] !== '' ? $config['vsa-dir'] : self::DEFAULT_VSA_DIR,
+            vsaSignKey: is_string($config['vsa-sign-key'] ?? null) && $config['vsa-sign-key'] !== '' ? $config['vsa-sign-key'] : null,
         );
     }
 

@@ -98,8 +98,26 @@ For each verified package the plugin writes `<vsa-dir>/<vendor>-<name>-<version>
 — a Statement over the artifact digest carrying the verifier, the policy issuer it
 required, the outcome (`PASSED`), and the SLSA level GitHub build provenance meets
 (`SLSA_BUILD_LEVEL_2`). `composer attest` emits them for the whole `vendor/` in one
-pass. Built on [`k2gl/slsa-provenance`](https://github.com/k2gl/slsa-provenance);
-the files are unsigned records — signing is a separate step.
+pass. Built on [`k2gl/slsa-provenance`](https://github.com/k2gl/slsa-provenance).
+
+### Sign them
+
+Point `vsa-sign-key` at a PEM private key and each VSA is signed into a DSSE
+envelope (`<vendor>-<name>-<version>.vsa.dsse.json`) instead of a bare statement —
+a verifiable attestation you can hand to anyone holding the public key:
+
+```json
+{
+  "extra": {
+    "k2gl-attest": { "emit-vsa": true, "vsa-sign-key": "keys/vsa-signing.pem" }
+  }
+}
+```
+
+The algorithm is read from the key — RSA or ECDSA P-256/384/521. Signing is with a
+local key: a Composer install has no interactive OIDC flow, so keyless (Fulcio)
+signing is out of scope here. A bad or unreadable key is reported and skipped, never
+aborting the install.
 
 ## How it works
 

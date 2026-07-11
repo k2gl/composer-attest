@@ -24,6 +24,7 @@ final class PolicyTest extends TestCase
         fact($policy->issuer)->is('https://token.actions.githubusercontent.com');
         fact($policy->emitVsa)->false();
         fact($policy->vsaDir)->is('.attestations/vsa');
+        fact($policy->vsaSignKey)->null();
     }
 
     public function testReadsConfiguredValues(): void
@@ -34,6 +35,7 @@ final class PolicyTest extends TestCase
             'issuer' => 'https://gitlab.example/oidc',
             'emit-vsa' => true,
             'vsa-dir' => 'build/vsa',
+            'vsa-sign-key' => '/keys/vsa.pem',
         ]]);
 
         fact($policy->isEnforcing())->true();
@@ -41,6 +43,7 @@ final class PolicyTest extends TestCase
         fact($policy->issuer)->is('https://gitlab.example/oidc');
         fact($policy->emitVsa)->true();
         fact($policy->vsaDir)->is('build/vsa');
+        fact($policy->vsaSignKey)->is('/keys/vsa.pem');
     }
 
     public function testOffMode(): void

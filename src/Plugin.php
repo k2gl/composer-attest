@@ -89,13 +89,20 @@ final class Plugin implements PluginInterface, EventSubscriberInterface, Capable
         if (! $result->isVerified() || $result->digest === null) {
             return;
         }
-        $path = (new VsaEmitter($this->policy))->write(
-            packageName: $package->getName(),
-            version: $package->getPrettyVersion(),
-            artifactName: basename($file),
-            digest: $result->digest,
-            timeVerified: gmdate('Y-m-d\TH:i:s\Z'),
-        );
+
+        try {
+            $path = (new VsaEmitter($this->policy))->write(
+                packageName: $package->getName(),
+                version: $package->getPrettyVersion(),
+                artifactName: basename($file),
+                digest: $result->digest,
+                timeVerified: gmdate('Y-m-d\TH:i:s\Z'),
+            );
+        } catch (Throwable $e) {
+            $this->io->writeError(sprintf('  <warning>! could not write VSA for %s: %s</warning>', $package->getName(), $e->getMessage()));
+
+            return;
+        }
 
         if ($path !== null) {
             $this->io->write(sprintf('  <info>→ VSA written</info> %s', $path), true, IOInterface::VERBOSE);

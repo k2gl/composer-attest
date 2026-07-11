@@ -6,6 +6,8 @@ namespace K2gl\ComposerAttest\Tests;
 
 use K2gl\ComposerAttest\Policy;
 use K2gl\ComposerAttest\VsaEmitter;
+use K2gl\Dsse\Envelope;
+use K2gl\Dsse\PublicKey;
 use K2gl\InToto\Statement;
 use K2gl\InToto\StatementVersion;
 use K2gl\Slsa\VerificationResult as VsaResult;
@@ -85,5 +87,30 @@ final class VsaEmitterTest extends TestCase
 
         @unlink((string) $path);
         @rmdir($dir);
+    }
+
+    public function testWriteSignsWhenAKeyIsConfigured(): void
+    {
+        $dir = sys_get_temp_dir() . '/vsa-' . uniqid();
+        $keyFile = sys_get_temp_dir() . '/vsa-key-' . uniqid() . '.pem';
+        $key = openssl_pkey_new(['private_key_type' => OPENSSL_KEYTYPE_EC, 'curve_name' => 'prime256v1']);
+        openssl_pkey_export($key, $privatePem);
+        file_put_contents($keyFile, (string) $privatePem);
+        $publicPem = (string) openssl_pkey_get_details($key)['key'];
+
+        $emitter = new VsaEmitter(new Policy(emitVsa: true, vsaDir: $dir, vsaSignKey: $keyFile));
+        $path = $emitter->write('k2gl/dsse', '1.3.0', 'dsse.zip', self::DIGEST, '2026-07-11T12:00:00Z');
+
+        fact($path)->is($dir . '/k2gl-dsse-1.3.0.vsa.dsse.json');
+
+        $envelope = Envelope::fromJson((string) file_get_contents((string) $path));
+        fact($envelope->payloadType)->is(Statement::PAYLOAD_TYPE);
+
+        $vsa = VerificationSummary::fromStatement(Statement::fromJson($envelope->verify(PublicKey::fromPem($publicPem))));
+        fact($vsa->resourceUri)->is('pkg:composer/k2gl/dsse@1.3.0');
+
+        @unlink((string) $path);
+        @rmdir($dir);
+        @unlink($keyFile);
     }
 }
