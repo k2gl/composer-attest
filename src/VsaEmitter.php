@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace K2gl\ComposerAttest;
 
+use K2gl\ComposerAttest\Exception\AttestationException;
 use K2gl\InToto\ResourceDescriptor;
 use K2gl\InToto\Statement;
 use K2gl\Slsa\VerificationResult as VsaResult;
@@ -61,8 +62,10 @@ final class VsaEmitter
     }
 
     /**
-     * Write the VSA under the configured directory. Returns the file path, or
-     * null when emission is disabled or the file could not be written.
+     * Write the VSA under the configured directory — a bare statement
+     * (`.vsa.json`), or, when a signing key is configured, a signed DSSE envelope
+     * (`.vsa.dsse.json`). Returns the file path, or null when emission is disabled
+     * or the file could not be written.
      */
     public function write(string $packageName, string $version, string $artifactName, string $digest, string $timeVerified): ?string
     {
@@ -74,10 +77,22 @@ final class VsaEmitter
         if (! is_dir($dir) && ! @mkdir($dir, 0777, true) && ! is_dir($dir)) {
             return null;
         }
+        $statement = $this->statement($packageName, $version, $artifactName, $digest, $timeVerified);
         $slug = str_replace('/', '-', $packageName . '-' . $version);
-        $path = rtrim($dir, '/') . '/' . $slug . '.vsa.json';
-        $json = $this->json($packageName, $version, $artifactName, $digest, $timeVerified);
 
-        return @file_put_contents($path, $json . "\n") !== false ? $path : null;
+        if ($this->policy->vsaSignKey !== null) {
+            $pem = @file_get_contents($this->policy->vsaSignKey);
+
+            if ($pem === false) {
+                throw new AttestationException(sprintf('could not read the VSA signing key "%s"', $this->policy->vsaSignKey));
+            }
+            $contents = VsaSigner::fromPrivateKeyPem($pem)->sign($statement)->toJson();
+            $path = rtrim($dir, '/') . '/' . $slug . '.vsa.dsse.json';
+        } else {
+            $contents = json_encode($statement->toArray(), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
+            $path = rtrim($dir, '/') . '/' . $slug . '.vsa.json';
+        }
+
+        return @file_put_contents($path, $contents . "\n") !== false ? $path : null;
     }
 }

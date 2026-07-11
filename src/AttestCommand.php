@@ -88,13 +88,20 @@ final class AttestCommand extends BaseCommand
         if ($result->digest === null) {
             return;
         }
-        $path = (new VsaEmitter($policy))->write(
-            packageName: $package->getName(),
-            version: $package->getPrettyVersion(),
-            artifactName: sprintf('%s-%s.zip', basename($package->getName()), $package->getPrettyVersion()),
-            digest: $result->digest,
-            timeVerified: gmdate('Y-m-d\TH:i:s\Z'),
-        );
+
+        try {
+            $path = (new VsaEmitter($policy))->write(
+                packageName: $package->getName(),
+                version: $package->getPrettyVersion(),
+                artifactName: sprintf('%s-%s.zip', basename($package->getName()), $package->getPrettyVersion()),
+                digest: $result->digest,
+                timeVerified: gmdate('Y-m-d\TH:i:s\Z'),
+            );
+        } catch (Throwable $e) {
+            $this->getIO()->writeError(sprintf('    <warning>! could not write VSA for %s: %s</warning>', $package->getName(), $e->getMessage()));
+
+            return;
+        }
 
         if ($path !== null) {
             $this->getIO()->write(sprintf('    <info>→ VSA</info> %s', $path));
