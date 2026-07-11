@@ -50,6 +50,10 @@ All configuration lives under `extra.k2gl-attest` in your root `composer.json`:
   one yet.
 - **`issuer`** — the OIDC issuer the signing certificate must carry. Defaults to
   GitHub Actions.
+- **`emit-vsa`** — after a package verifies, write a SLSA Verification Summary
+  Attestation recording the outcome (see [below](#emit-a-verification-summary-vsa)).
+  Off by default.
+- **`vsa-dir`** — where those VSA files are written. Defaults to `.attestations/vsa`.
 
 ## What you'll see
 
@@ -73,6 +77,29 @@ composer attest
 It re-fetches each installed GitHub-hosted package's dist, verifies its
 attestation, and prints a summary — honouring the same `extra.k2gl-attest` policy,
 and exiting non-zero on a failure under `enforce`.
+
+## Emit a Verification Summary (VSA)
+
+The check itself is transient — a line in the install log that scrolls past. Turn
+on `emit-vsa` to also record each passing verification as a **SLSA Verification
+Summary Attestation** (`https://slsa.dev/verification_summary/v1`): a portable
+in-toto Statement you can store next to `vendor/`, hand to a downstream policy
+gate, or sign later.
+
+```json
+{
+  "extra": {
+    "k2gl-attest": { "mode": "warn", "emit-vsa": true }
+  }
+}
+```
+
+For each verified package the plugin writes `<vsa-dir>/<vendor>-<name>-<version>.vsa.json`
+— a Statement over the artifact digest carrying the verifier, the policy issuer it
+required, the outcome (`PASSED`), and the SLSA level GitHub build provenance meets
+(`SLSA_BUILD_LEVEL_2`). `composer attest` emits them for the whole `vendor/` in one
+pass. Built on [`k2gl/slsa-provenance`](https://github.com/k2gl/slsa-provenance);
+the files are unsigned records — signing is a separate step.
 
 ## How it works
 

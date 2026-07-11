@@ -62,7 +62,7 @@ final class AttestationVerifier
                 $envelope = $verifier->verify($bundle, $this->trustedRoot, $identityPolicy);
 
                 if ($this->subjectMatches($envelope, $digest)) {
-                    return VerificationResult::verified($owner . '/' . $repo);
+                    return VerificationResult::verified($owner . '/' . $repo, $digest);
                 }
                 $lastError = 'verified attestation does not cover this artifact';
             } catch (SigstoreException $e) {

@@ -17,11 +17,12 @@ final class VerificationResult
     private function __construct(
         private readonly string $status,
         public readonly string $message,
+        public readonly ?string $digest = null,
     ) {}
 
-    public static function verified(string $identity): self
+    public static function verified(string $identity, string $digest): self
     {
-        return new self(self::VERIFIED, $identity);
+        return new self(self::VERIFIED, $identity, $digest);
     }
 
     public static function noAttestation(): self

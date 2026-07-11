@@ -15,12 +15,13 @@ final class VerificationResultTest extends TestCase
 {
     public function testVerified(): void
     {
-        $result = VerificationResult::verified('k2gl/dsse');
+        $result = VerificationResult::verified('k2gl/dsse', 'abc123');
 
         fact($result->isVerified())->true();
         fact($result->hasAttestation())->true();
         fact($result->isFailure())->false();
         fact($result->message)->is('k2gl/dsse');
+        fact($result->digest)->is('abc123');
     }
 
     public function testNoAttestation(): void
