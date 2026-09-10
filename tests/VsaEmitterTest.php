@@ -82,8 +82,7 @@ final class VsaEmitterTest extends TestCase
         fact($path)->is($dir . '/k2gl-dsse-1.3.0.vsa.json');
         fact(is_file((string) $path))->true();
 
-        $decoded = json_decode((string) file_get_contents((string) $path), true);
-        fact($decoded['predicateType'])->is(VerificationSummary::PREDICATE_TYPE);
+        fact((string) file_get_contents((string) $path))->jsonPath('predicateType', VerificationSummary::PREDICATE_TYPE);
 
         @unlink((string) $path);
         @rmdir($dir);
