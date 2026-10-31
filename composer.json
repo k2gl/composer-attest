@@ -36,7 +36,7 @@
     "composer/composer": "^2.4",
     "phpunit/phpunit": "^10|^11|^12",
     "phpstan/phpstan": "^2.1",
-    "laravel/pint": "~1.20.0",
+    "laravel/pint": "~1.32.1",
     "k2gl/phpunit-fluent-assertions": "^12"
   },
   "autoload": {
